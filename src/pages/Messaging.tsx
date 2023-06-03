@@ -15,12 +15,6 @@ interface DBMsg {
     message: string
 }
 
-// Utility function to check if the device is a mobile device
-const isMobileDevice = (): boolean => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    return /mobile|android|iphone|ipad|iemobile|wpdesktop/i.test(userAgent);
-};
-
 const Messaging = ({ user }: Props) => {
     const [message, setMessage] = useState('')
     const ERROR: string = 'error'
@@ -28,7 +22,6 @@ const Messaging = ({ user }: Props) => {
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
-    const [isMobile, setIsMobile] = useState(false);
 
 
     const start = async () => {
@@ -70,8 +63,6 @@ const Messaging = ({ user }: Props) => {
         } catch {
             setUSERNUMID('-1')
         }
-        // Update the isMobile state on component mount
-        setIsMobile(isMobileDevice());
     }, [])
 
     //Calls start once the USERNUMID is set
@@ -151,7 +142,7 @@ const Messaging = ({ user }: Props) => {
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
-                    <textarea className={`w-1/2 mx-auto text-black border-solid border-2 border-gray-300 pl-4 pr-4 overflow-auto ${isMobile ? 'h-7vh' : 'h-14vh'}`}
+                    <textarea className={`w-1/2 mx-auto text-black border-solid border-2 border-gray-300 pl-4 pr-4 overflow-auto`}
                         style={{
                             height: '14vh',
                             overflowX: 'hidden',
