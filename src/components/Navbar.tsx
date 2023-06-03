@@ -8,19 +8,12 @@ interface NavBarProps {
 
 const NavBar = ({ username }: NavBarProps) => {
     const router = useRouter()
-    const [showWelcome, setShowWelcome] = useState(true);
+    const [showWelcome, setShowWelcome] = useState(false);
 
     useEffect(() => {
-        const handleResize = () => {
-            setShowWelcome(window.innerWidth > 640); // Adjust the breakpoint as needed
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        // Cleanup the event listener on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
+        if(window.innerWidth > 640){
+            setShowWelcome(true)
+        }
     }, []);
 
     return (
