@@ -21,7 +21,7 @@ const MessageBox = ({ text, messageKey, time, clientSentMsg, name}: Props) => {
                         <div
                             key={messageKey}
                             className={`bg-blue-500 p-2 flex items-center justify-between rounded-md max-w-xs md:max-w-md mb-3 ${hovered ? '' : 'mr-5'}`}>
-                            <div className="text-white">{text}</div>
+                            <div className="text-white whitespace-normal break-all">{text}</div>
                         </div>
                         {hovered ? (<div className='mb-3 ml-1'>{time}</div>) : <></>}
                     </div>
@@ -37,7 +37,7 @@ const MessageBox = ({ text, messageKey, time, clientSentMsg, name}: Props) => {
                         <div
                             key={messageKey}
                             className={`bg-gray-300 p-2 flex items-center justify-between mr-auto rounded-md max-w-xs md:max-w-md mb-3 ml-5`}>
-                            <div className="text-black">{text}</div>
+                            <div className={`text-black whitespace-normal break-all`}>{text}</div>
                         </div>
                         {hovered ? (<div className='mb-3 ml-1'>{time}</div>) : <></>}
                     </div>

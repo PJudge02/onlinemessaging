@@ -15,6 +15,12 @@ interface DBMsg {
     message: string
 }
 
+// Utility function to check if the device is a mobile device
+const isMobileDevice = (): boolean => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    return /mobile|android|iphone|ipad|iemobile|wpdesktop/i.test(userAgent);
+};
+
 const Messaging = ({ user }: Props) => {
     const [message, setMessage] = useState('')
     const ERROR: string = 'error'
@@ -22,6 +28,8 @@ const Messaging = ({ user }: Props) => {
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
+    const [isMobile, setIsMobile] = useState(false);
+
 
     const start = async () => {
         let { data, error } = await supabase
@@ -62,6 +70,8 @@ const Messaging = ({ user }: Props) => {
         } catch {
             setUSERNUMID('-1')
         }
+        // Update the isMobile state on component mount
+        setIsMobile(isMobileDevice());
     }, [])
 
     //Calls start once the USERNUMID is set
@@ -120,7 +130,9 @@ const Messaging = ({ user }: Props) => {
                 message: message,
                 name: name
             }
-            submit(msg4DB)
+            if (message.length < 6500) {
+                submit(msg4DB)
+            }
             setMessage('');
         }
     }
@@ -139,14 +151,26 @@ const Messaging = ({ user }: Props) => {
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
-                    <textarea className="w-1/2 mx-auto text-black border-solid border-2 border-gray-300 pl-4 pr-4 overflow-auto"
-                        style={{ height: '14vh', overflowX: 'hidden', overflowY: 'scroll', fontSize: '24px' }}
+                    <textarea className={`w-1/2 mx-auto text-black border-solid border-2 border-gray-300 pl-4 pr-4 overflow-auto ${isMobile ? 'h-7vh' : 'h-14vh'}`}
+                        style={{
+                            height: '14vh',
+                            overflowX: 'hidden',
+                            overflowY: 'scroll',
+                            fontSize: '24px'
+                        }}
                         placeholder="Message"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
                 </div>
+                {/* <style>{`
+                    @media (max-width: 767px) {
+                        div {
+                            height: 7vh;
+                            }
+                    }
+                `}</style> */}
             </div>
         </div>
     )
