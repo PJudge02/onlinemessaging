@@ -155,13 +155,6 @@ const Messaging = ({ user }: Props) => {
                         onKeyDown={handleKeyDown}
                     />
                 </div>
-                {/* <style>{`
-                    @media (max-width: 767px) {
-                        div {
-                            height: 7vh;
-                            }
-                    }
-                `}</style> */}
             </div>
         </div>
     )
