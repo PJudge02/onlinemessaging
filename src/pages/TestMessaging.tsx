@@ -14,8 +14,8 @@ interface Props{
 const TestMessaging = ({user, countries}: Props) => {
 
 //   console.log(countries)
-  console.log(user)
-  console.log(user.sub)
+//   console.log(user)
+//   console.log(user.sub)
 
     return (
         <div className="flex flex-col h-screen">

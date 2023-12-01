@@ -4,6 +4,7 @@ import NavBar from '@/components/Navbar'
 import { supabase } from '@/utils/supabase'
 import { useEffect, useState, useRef } from 'react'
 import MessageBox from '@/components/MessageBox'
+import { useRouter } from 'next/router';
 
 interface Props {
     user: UserProfile
@@ -15,6 +16,11 @@ interface DBMsg {
     message: string
 }
 
+interface DBUser {
+    name: string,
+    email: string
+}
+
 const Messaging = ({ user }: Props) => {
     const [message, setMessage] = useState('')
     const ERROR: string = 'error'
@@ -22,9 +28,52 @@ const Messaging = ({ user }: Props) => {
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
+    const [listOfUsers, setListOfUsers] = useState<string[]>([])
 
+    //gets the information passed in
+    // const router = useRouter();
+    // const { userEmail, userName } = router.query;
+
+    // checks to see if the user is found in the database
+    const checkNewUser = async () => {
+        let { data, error } = await supabase
+            .from('users')
+            .select('email')
+        // console.log("the following are the emails:")
+        // console.log(data)
+        // console.log("RIGHT HERE")
+        // console.log(user)
+        // console.log(data?.at(0)?.email)
+        let userEmail = user?.email ?? ""
+        let len = data?.length ?? 0
+        let counter = 0
+        let emails: string[] = []
+        for (let i = 0; i < len; i++) {
+            if (userEmail != data?.at(i)?.email) {
+                counter++
+            }
+            emails.push(data?.at(i)?.email)
+        }
+        setListOfUsers([...emails])
+        console.log(listOfUsers)
+        console.log(emails)
+        console.log("Hi")
+        if (counter == len) {
+            const newUser = {
+                name: user?.name ?? "error",
+                email: user?.email ?? "error@gmail.com" + len
+            }
+            addUserToDatabase(newUser)
+        }
+    }
+    // if the user isn't found in the database, user is added to it
+    const addUserToDatabase = async (newUser: DBUser) => {
+        console.log("Trying to add to database")
+        await supabase.from('users').insert(newUser)
+    }
 
     const start = async () => {
+        checkNewUser()
         let { data, error } = await supabase
             .from('messagetracking')
             .select()
@@ -63,6 +112,8 @@ const Messaging = ({ user }: Props) => {
         } catch {
             setUSERNUMID('-1')
         }
+        console.log("HELLO THERE")
+        console.log(user)
     }, [])
 
     //Calls start once the USERNUMID is set
@@ -106,6 +157,7 @@ const Messaging = ({ user }: Props) => {
     }, [listOfMessages])
 
     const submit = async (msg: DBMsg) => {
+        console.log(listOfUsers)
         await supabase
             .from('messagetracking')
             .insert(msg)
@@ -142,7 +194,7 @@ const Messaging = ({ user }: Props) => {
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
-                    <textarea className={`w-1/2 mx-auto text-black border-solid border-2 border-gray-300 pl-4 pr-4 overflow-auto`}
+                    <textarea className={`w-1/2 mr-4 text-black border-solid border-2 border-gray-300 pl-4 pr-4 overflow-auto`}
                         style={{
                             height: '14vh',
                             overflowX: 'hidden',
@@ -154,7 +206,19 @@ const Messaging = ({ user }: Props) => {
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
+                    <div className='bg-white w-1/4 border-solid border-2 border-gray-300 overflow-auto'
+                        style={{ height: '14vh'}}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                // checked={isChecked}
+                                // onChange={handleCheckboxChange}
+                            />
+                            Checkbox Label
+                        </label>
+                    </div>
                 </div>
+
             </div>
         </div>
     )
