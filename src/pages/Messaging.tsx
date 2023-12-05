@@ -2,7 +2,7 @@ import { withPageAuthRequired } from '@auth0/nextjs-auth0'
 import { UserProfile, useUser } from '@auth0/nextjs-auth0/client'
 import NavBar from '@/components/Navbar'
 import { supabase } from '@/utils/supabase'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, ChangeEvent } from 'react'
 import MessageBox from '@/components/MessageBox'
 import { useRouter } from 'next/router';
 
@@ -21,7 +21,15 @@ interface DBUser {
     email: string
 }
 
+interface userList{
+    id: number,
+    email: string
+}
+
 const Messaging = ({ user }: Props) => {
+    //gets the information passed in
+    // const router = useRouter();
+    // const { userEmail, userName } = router.query;
     const [message, setMessage] = useState('')
     const ERROR: string = 'error'
     const [listOfMessages, setlistOfMessages] = useState<React.ReactNode[]>([])
@@ -29,21 +37,45 @@ const Messaging = ({ user }: Props) => {
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
     const [listOfUsers, setListOfUsers] = useState<string[]>([])
+    const [checkedItems, setCheckedItems] = useState<string[]>([]);
 
-    //gets the information passed in
-    // const router = useRouter();
-    // const { userEmail, userName } = router.query;
+    // Sample array of checkbox items
+    const checkboxData = [
+        { id: 1, label: 'Option 1' },
+        { id: 2, label: 'Option 2' },
+        { id: 3, label: 'Option 3' },
+        { id: 4, label: 'Option 4' },
+        { id: 5, label: 'Option 5' },
+        { id: 6, label: 'Option 6' }
+    ];
+    // const [checkboxData, setCheckboxData] = useState<userList[]>([])
+
+    const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = event.target;
+
+        const updatedCheckedItems = [...checkedItems];
+
+        if (checked) {
+            updatedCheckedItems.push(name);
+        } else {
+            const index = updatedCheckedItems.indexOf(name);
+            if (index !== -1) {
+                updatedCheckedItems.splice(index, 1);
+            }
+        }
+
+        setCheckedItems(updatedCheckedItems);
+    };
+    useEffect(() => {
+        console.log("CHECKED ITEMS!")
+        console.log(checkedItems)
+    }, [checkedItems])
 
     // checks to see if the user is found in the database
     const checkNewUser = async () => {
         let { data, error } = await supabase
             .from('users')
             .select('email')
-        // console.log("the following are the emails:")
-        // console.log(data)
-        // console.log("RIGHT HERE")
-        // console.log(user)
-        // console.log(data?.at(0)?.email)
         let userEmail = user?.email ?? ""
         let len = data?.length ?? 0
         let counter = 0
@@ -53,6 +85,9 @@ const Messaging = ({ user }: Props) => {
                 counter++
             }
             emails.push(data?.at(i)?.email)
+            // let newOption = [...checkboxData]
+            // newOption.push({id: i, email: data?.at(i)?.email ?? "error"});
+            // setCheckboxData(newOption);
         }
         setListOfUsers([...emails])
         console.log(listOfUsers)
@@ -68,7 +103,6 @@ const Messaging = ({ user }: Props) => {
     }
     // if the user isn't found in the database, user is added to it
     const addUserToDatabase = async (newUser: DBUser) => {
-        console.log("Trying to add to database")
         await supabase.from('users').insert(newUser)
     }
 
@@ -112,8 +146,6 @@ const Messaging = ({ user }: Props) => {
         } catch {
             setUSERNUMID('-1')
         }
-        console.log("HELLO THERE")
-        console.log(user)
     }, [])
 
     //Calls start once the USERNUMID is set
@@ -207,15 +239,28 @@ const Messaging = ({ user }: Props) => {
                         onKeyDown={handleKeyDown}
                     />
                     <div className='bg-white w-1/4 border-solid border-2 border-gray-300 overflow-auto'
-                        style={{ height: '14vh'}}>
-                        <label>
-                            <input
-                                type="checkbox"
-                                // checked={isChecked}
-                                // onChange={handleCheckboxChange}
-                            />
-                            Checkbox Label
-                        </label>
+                        style={{ height: '14vh' }}>
+                        <div className="container">
+                            <div className="row">
+                                <div className="col">
+                                    {checkboxData.map((item) => (
+                                        <div key={item.id} className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                name={`checkbox${item.id}`}
+                                                checked={checkedItems.includes(`checkbox${item.id}`)}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                            <label className="form-check-label">{item.email}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <p>Selected checkboxes: {checkedItems.join(', ')}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
