@@ -36,19 +36,19 @@ const Messaging = ({ user }: Props) => {
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
-    const [listOfUsers, setListOfUsers] = useState<string[]>([])
+    // const [listOfUsers, setListOfUsers] = useState<string[]>([])
     const [checkedItems, setCheckedItems] = useState<string[]>([]);
 
     // Sample array of checkbox items
-    const checkboxData = [
-        { id: 1, label: 'Option 1' },
-        { id: 2, label: 'Option 2' },
-        { id: 3, label: 'Option 3' },
-        { id: 4, label: 'Option 4' },
-        { id: 5, label: 'Option 5' },
-        { id: 6, label: 'Option 6' }
-    ];
-    // const [checkboxData, setCheckboxData] = useState<userList[]>([])
+    // const checkboxData = [
+    //     { id: 1, label: 'Option 1' },
+    //     { id: 2, label: 'Option 2' },
+    //     { id: 3, label: 'Option 3' },
+    //     { id: 4, label: 'Option 4' },
+    //     { id: 5, label: 'Option 5' },
+    //     { id: 6, label: 'Option 6' }
+    // ];
+    const [checkboxData, setCheckboxData] = useState<userList[]>([])
 
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
@@ -79,18 +79,23 @@ const Messaging = ({ user }: Props) => {
         let userEmail = user?.email ?? ""
         let len = data?.length ?? 0
         let counter = 0
-        let emails: string[] = []
+        let emails: userList[] = []
         for (let i = 0; i < len; i++) {
             if (userEmail != data?.at(i)?.email) {
                 counter++
             }
-            emails.push(data?.at(i)?.email)
+            // emails.push(data?.at(i)?.email)
+            let temp: userList = {id: i+1, email: data?.at(i)?.email}
+            emails.push(temp)
+
             // let newOption = [...checkboxData]
             // newOption.push({id: i, email: data?.at(i)?.email ?? "error"});
             // setCheckboxData(newOption);
         }
-        setListOfUsers([...emails])
-        console.log(listOfUsers)
+        setCheckboxData([...emails])
+        console.log(checkboxData)
+        // setListOfUsers([...emails])
+        // console.log(listOfUsers)
         console.log(emails)
         console.log("Hi")
         if (counter == len) {
@@ -189,7 +194,6 @@ const Messaging = ({ user }: Props) => {
     }, [listOfMessages])
 
     const submit = async (msg: DBMsg) => {
-        console.log(listOfUsers)
         await supabase
             .from('messagetracking')
             .insert(msg)
