@@ -34,7 +34,6 @@ def rsa_gen_keypair():
 # Returns: An ASCII/UTF-8 string serialization of the private key using the
 #   PKCS-8 format and PEM encoding. Does not encrypt the key for at-rest
 #   storage.
-#
 def rsa_serialize_private_key(private_key: rsa.RSAPrivateKey):
     pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
