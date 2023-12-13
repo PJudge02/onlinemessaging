@@ -22,6 +22,35 @@ RSA_KEY_BITS = 4096
 RSA_PUBLIC_EXPONENT = 65537
 
 
+def rsa_sign(private_key: rsa.RSAPrivateKey, message: bytes) -> bytes:
+    return private_key.sign(
+        message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
+        hashes.SHA256(),
+    )
+
+
+def rsa_verify(public_key: rsa.RSAPublicKey, message: bytes, signature: bytes) -> bool:
+    try:
+        public_key.verify(
+        signature,
+        message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
+        hashes.SHA256(),
+    )
+        return True
+    except Exception:
+        return False
+
+
 def rsa_gen_keypair():
     return rsa.generate_private_key(
         key_size=RSA_KEY_BITS, public_exponent=RSA_PUBLIC_EXPONENT
@@ -77,8 +106,7 @@ def rsa_serialize_public_key(public_key: rsa.RSAPublicKey):
 # Returns: An rsa.RSAPublicKey object consisting of the deserialized key.
 #
 def rsa_deserialize_public_key(pem_pubkey: str):
-    return serialization.load_pem_public_key(
-        pem_pubkey.encode())
+    return serialization.load_pem_public_key(pem_pubkey.encode())
 
 
 #
@@ -98,7 +126,9 @@ def rsa_encrypt(public_key: rsa.RSAPublicKey, plaintext):
             label=None,
         ),
     )
+
     return cipher_text
+
 
 #
 # Arguments:
@@ -206,10 +236,15 @@ def aes_encrypt_with_random_session_key(plaintext: bytes):
 #       raw byte string).
 #   ciphertext: The AES-256-CTR-encrypted message (as a raw byte string).
 #
-def encrypt_message_with_aes_and_rsa(public_key: rsa.RSAPublicKey, plaintext: bytes):
+def encrypt_message_with_aes_and_rsa(
+    public_key: rsa.RSAPublicKey,
+    plaintext: bytes,
+    sender_private_key: rsa.RSAPrivateKey
+):
     key, nonce, message = aes_encrypt_with_random_session_key(plaintext)
     encrypted_key = rsa_encrypt(public_key, key)
-    return (encrypted_key, nonce, message)
+    signature = rsa_sign(sender_private_key, message)
+    return (encrypted_key, nonce, message, signature)
 
 
 #
@@ -232,9 +267,14 @@ def decrypt_message_with_aes_and_rsa(
     encrypted_session_key: bytes,
     nonce: bytes,
     ciphertext: bytes,
+    signature: bytes,
+    sender_public_key: rsa.RSAPublicKey
 ):
     session_key: bytes = rsa_decrypt(private_key, encrypted_session_key)
-    return aes_decrypt(session_key, nonce, ciphertext)
+    if rsa_verify(sender_public_key, ciphertext, signature):
+        return aes_decrypt(session_key, nonce, ciphertext)
+    else:
+        return None
 
 
 #
