@@ -243,7 +243,7 @@ def encrypt_message_with_aes_and_rsa(
 ):
     key, nonce, message = aes_encrypt_with_random_session_key(plaintext)
     encrypted_key = rsa_encrypt(public_key, key)
-    signature = rsa_sign(sender_private_key, message)
+    signature = rsa_sign(sender_private_key, (message + encrypted_key + nonce))
     return (encrypted_key, nonce, message, signature)
 
 
@@ -270,8 +270,9 @@ def decrypt_message_with_aes_and_rsa(
     signature: bytes,
     sender_public_key: rsa.RSAPublicKey
 ):
+    full_signature = ciphertext + encrypted_session_key + nonce
     session_key: bytes = rsa_decrypt(private_key, encrypted_session_key)
-    if rsa_verify(sender_public_key, ciphertext, signature):
+    if rsa_verify(sender_public_key, full_signature, signature):
         return aes_decrypt(session_key, nonce, ciphertext)
     else:
         return None
