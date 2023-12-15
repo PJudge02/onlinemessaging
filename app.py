@@ -32,8 +32,8 @@ class User(db.Model):
 
 
 class Message(db.Model):
-    __tablename__ = "messages"
-    messageid = Column(BigInteger, primary_key=True)
+    __tablename__ = "messagetracking"
+    id = Column(BigInteger, primary_key=True)
     userfrom = Column(BigInteger, nullable=False)
     userto = Column(BigInteger, nullable=False)
     message = Column(Text, nullable=False)
@@ -66,6 +66,7 @@ def newUser():
 @app.post("/api/flask/message/encrypt/")
 def encrypt_message():
     info = request.json
+    print(info)
     ## get sender
     sender = User.query.filter_by(email=info["sender"]).first_or_404()
     ## get receiver
@@ -74,9 +75,9 @@ def encrypt_message():
     message: str = info["message"]
     enc_message: bytes = message.encode()
 
-    sender_private: rsa.RSAPrivateKey = enc.rsa_deserialize_private_key(sender.private_key.encode())  # type: ignore
+    sender_private: rsa.RSAPrivateKey = enc.rsa_deserialize_private_key(sender.private_key)  # type: ignore
     receiver_public: rsa.RSAPublicKey = enc.rsa_deserialize_public_key(
-        receiver.public_key.encode()
+        receiver.public_key
     ) #type: ignore
 
     key, nonce, encrypted_message, signature = enc.encrypt_message_with_aes_and_rsa(
@@ -92,9 +93,12 @@ def encrypt_message():
         signature=signature,
         created_at=datetime.utcnow().isoformat(),
     ) # type: ignore
+
+    db.session.add(message)
+    db.session.commit()
     return "", 200
 
 
 @app.post("/api/flask/message/decrypt/")
-def decrypt_message(sender, receiver):
+def decrypt_message():
     return "", 200

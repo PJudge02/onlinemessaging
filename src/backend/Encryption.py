@@ -8,7 +8,6 @@ from cryptography.hazmat.primitives.serialization import (
     load_der_private_key,
 )  # <- delete this?
 
-
 import secrets  # Use this for generating random byte strings (keys, etc.)
 from time import perf_counter
 from inspect import cleandoc  # Cleans up indenting in multi-line strings (""")
@@ -25,10 +24,8 @@ RSA_PUBLIC_EXPONENT = 65537
 def rsa_sign(private_key: rsa.RSAPrivateKey, message: bytes) -> bytes:
     return private_key.sign(
         message,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
         ),
         hashes.SHA256(),
     )
@@ -37,20 +34,19 @@ def rsa_sign(private_key: rsa.RSAPrivateKey, message: bytes) -> bytes:
 def rsa_verify(public_key: rsa.RSAPublicKey, message: bytes, signature: bytes) -> bool:
     try:
         public_key.verify(
-        signature,
-        message,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None,
-        ),
-        hashes.SHA256(),
-    )
+            signature,
+            message,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256(),
+        )
         return True
     except Exception:
         return False
 
-#----
+
+# ----
 def rsa_gen_keypair():
     return rsa.generate_private_key(
         key_size=RSA_KEY_BITS, public_exponent=RSA_PUBLIC_EXPONENT
@@ -239,7 +235,7 @@ def aes_encrypt_with_random_session_key(plaintext: bytes):
 def encrypt_message_with_aes_and_rsa(
     public_key: rsa.RSAPublicKey,
     plaintext: bytes,
-    sender_private_key: rsa.RSAPrivateKey
+    sender_private_key: rsa.RSAPrivateKey,
 ):
     key, nonce, message = aes_encrypt_with_random_session_key(plaintext)
     encrypted_key = rsa_encrypt(public_key, key)
@@ -268,7 +264,7 @@ def decrypt_message_with_aes_and_rsa(
     nonce: bytes,
     ciphertext: bytes,
     signature: bytes,
-    sender_public_key: rsa.RSAPublicKey
+    sender_public_key: rsa.RSAPublicKey,
 ):
     full_signature = ciphertext + encrypted_session_key + nonce
     session_key: bytes = rsa_decrypt(private_key, encrypted_session_key)

@@ -191,7 +191,7 @@ const Messaging = ({ user }: Props) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 'sender': data.sender, 'reciever': data.reciever}),
+                body: JSON.stringify({ 'sender': data.sender, 'receiver': data.reciever}),
             });
 
             if (response.ok) {
@@ -289,7 +289,7 @@ const Messaging = ({ user }: Props) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 'sender': user.email, 'reciever': checkboxData[0].email, 'message': msg.message  }),
+                body: JSON.stringify({ 'sender': user.email, 'receiver': checkboxData[0].email, 'message': msg.message  }),
             });
 
             if (response.ok) {
