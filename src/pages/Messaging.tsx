@@ -23,7 +23,8 @@ interface DBUser {
 
 interface decyptInfo {
     sender: string,
-    reciever: string
+    reciever: string,
+    msgID: number
 }
 
 interface userList {
@@ -191,7 +192,7 @@ const Messaging = ({ user }: Props) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 'sender': data.sender, 'receiver': data.reciever}),
+                body: JSON.stringify({ 'sender': data.sender, 'receiver': data.reciever, 'message': data.msgID}),
             });
 
             if (response.ok) {
@@ -244,12 +245,16 @@ const Messaging = ({ user }: Props) => {
                     const clientSentThisMsg: boolean = payload.new.userid === USERNUMID
                     const time: string = payload.new.created_at?.split('.')[0].substr(11)
                     const msgName: string = payload.new.name
+                    const msgID: number = payload.new.id
+                    console.log("PAYLOAD")
+                    console.log(payload)
                     //fetch decrypt api call
                     
                     getEmail(payload.new.userid).then((senderEmail: string) => {
                         const decryptData: decyptInfo = {
                             sender: senderEmail,
-                            reciever: user.email ?? "error@error.com"
+                            reciever: user.email ?? "error@error.com",
+                            msgID: msgID
                         }
                         decrypt(decryptData)
                     })
@@ -356,7 +361,7 @@ const Messaging = ({ user }: Props) => {
                                 <div className="col">
                                     {checkboxData.map((item) => (
                                         <div key={item.id} className="form-check">
-                                            <input
+                                            <input  
                                                 className="form-check-input"
                                                 type="checkbox"
                                                 name={`checkbox${item.id}`}
