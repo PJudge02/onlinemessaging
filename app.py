@@ -101,4 +101,14 @@ def encrypt_message():
 
 @app.post("/api/flask/message/decrypt/")
 def decrypt_message():
+    info = request.json
+    print(info)
+    ## get sender
+    sender = User.query.filter_by(email=info["sender"]).first_or_404()
+    ## get receiver
+    receiver = User.query.filter_by(email=info["receiver"]).first_or_404()
+
+    message: str = info["message"]
+    enc_message: bytes = message.encode()
+
     return "", 200
