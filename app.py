@@ -68,11 +68,11 @@ def newUser():
     return "", 200
 
 
-@app.post("/api/flask/message/<string:sender>/<string:receiver>/encrypt/")
+@app.post("/api/flask/message/encrypt/")
 def encrypt_message(sender, receiver):
     return "", 200
 
 
-@app.post("/api/flask/message/<string:sender>/<string:receiver>/decrypt/")
+@app.post("/api/flask/message/decrypt/")
 def decrypt_message(sender, receiver):
     return "", 200

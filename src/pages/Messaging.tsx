@@ -21,6 +21,11 @@ interface DBUser {
     email: string
 }
 
+interface decyptInfo {
+    sender: string,
+    reciever: string
+}
+
 interface userList {
     id: number,
     email: string
@@ -114,7 +119,7 @@ const Messaging = ({ user }: Props) => {
         // setListOfUsers([...emails])
         // console.log(listOfUsers)
         console.log(emails)
-        console.log("Hi")
+        // console.log("Hi")
         if (counter == len) {
             handleKeygen().then((result) => {
                 console.log(result)
@@ -179,6 +184,48 @@ const Messaging = ({ user }: Props) => {
         start()
     }, [USERNUMID])
 
+    const decrypt = async (data: decyptInfo) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/flask/message/decrypt/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 'sender': data.sender, 'reciever': data.reciever}),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setResult(data);
+            } else {
+                console.error('Failed to fetch data');
+            }
+        } catch (error) {
+            console.error('Error during fetch:', error);
+        }
+    }
+
+    const getEmail = async(searchID: number): Promise<string> => {
+        let { data, error } = await supabase
+            .from('users')
+            .select('*')
+        console.log("YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+        console.log(data)   
+        console.log("hi")
+        console.log(data?.[0])
+        console.log(data?.[0]?.id)
+        let len = data?.length ?? 0
+        let email = ""
+        for(let i = 0; i < len; i++){
+            if(data?.[i]?.id == searchID){
+                email = data?.[i]?.email
+                return email
+            }
+        } 
+        return "error"
+    }
+    
+
     useEffect(() => {
         if (messageContainerRef.current) {
             messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
@@ -197,6 +244,24 @@ const Messaging = ({ user }: Props) => {
                     const clientSentThisMsg: boolean = payload.new.userid === USERNUMID
                     const time: string = payload.new.created_at?.split('.')[0].substr(11)
                     const msgName: string = payload.new.name
+                    //fetch decrypt api call
+                    
+                    getEmail(payload.new.userid).then((senderEmail: string) => {
+                        const decryptData: decyptInfo = {
+                            sender: senderEmail,
+                            reciever: user.email ?? "error@error.com"
+                        }
+                        decrypt(decryptData)
+                    })
+                    
+                
+                    //this happens for everybody
+                    //get the sender's email, and this users email
+                    //fetch db with those emails
+                    //response will contain a message
+                    //Show message
+                    //that will either return the decrypted message
+                    //or the encrypted message if it wasnt for them
                     setlistOfMessages([
                         ...[<MessageBox
                             text={payload.new.message}
@@ -215,9 +280,27 @@ const Messaging = ({ user }: Props) => {
     }, [listOfMessages])
 
     const submit = async (msg: DBMsg) => {
-        await supabase
-            .from('messagetracking')
-            .insert(msg)
+        // await supabase
+        //     .from('messagetracking')
+        //     .insert(msg)
+        try {
+            const response = await fetch(`http://localhost:5000/api/flask/message/encrypt/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 'sender': user.email, 'reciever': checkboxData[0].email, 'message': msg.message  }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setResult(data);
+            } else {
+                console.error('Failed to fetch data');
+            }
+        } catch (error) {
+            console.error('Error during fetch:', error);
+        }
     }
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -232,6 +315,9 @@ const Messaging = ({ user }: Props) => {
             }
             if (message.length < 6500) {
                 submit(msg4DB)
+                //sender: sender email
+                //receiver: receiver email
+                //message: message
             }
             setMessage('');
         }
