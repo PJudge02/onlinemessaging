@@ -66,7 +66,6 @@ def newUser():
 @app.post("/api/flask/message/encrypt/")
 def encrypt_message():
     info = request.json
-    print(info)
     ## get sender
     sender = User.query.filter_by(email=info["sender"]).first_or_404()
     ## get receiver
@@ -87,10 +86,10 @@ def encrypt_message():
     message = Message(
         userfrom=sender.email,
         userto=receiver.email,
-        message=encrypted_message,
-        key=key,
-        nonce=nonce,
-        signature=signature,
+        message=encrypted_message.hex(),
+        key=key.hex(),
+        nonce=nonce.hex(),
+        signature=signature.hex(),
         created_at=datetime.utcnow().isoformat(),
     )  # type: ignore
 
@@ -102,28 +101,33 @@ def encrypt_message():
 @app.post("/api/flask/message/decrypt/")
 def decrypt_message():
     info = request.json
-    print(info)
     ## get sender
     sender = User.query.filter_by(email=info["sender"]).first_or_404()
     ## get receiver
     receiver = User.query.filter_by(email=info["receiver"]).first_or_404()
 
     message_id: str = info["message"]
-    message: Message = Message.query.get(message_id) # type: ignore
+    message: Message = Message.query.get(message_id)  # type: ignore
 
-    enc_message = message.message
-    key = message.key
-    nonce = message.nonce
-    signature = message.signature
-
+    enc_message = bytes.fromhex(str(message.message))
+    key = bytes.fromhex(str(message.key))
+    nonce = bytes.fromhex(str(message.nonce))
+    signature = bytes.fromhex(str(message.signature))
 
     sender_public: rsa.RSAPublicKey = enc.rsa_deserialize_public_key(
         sender.public_key
     )  # type: ignore
     receiver_private: rsa.RSAPrivateKey = enc.rsa_deserialize_private_key(receiver.private_key)  # type: ignore
 
-    message_real = enc.decrypt_message_with_aes_and_rsa(receiver_private, key.encode(), nonce.encode(), enc_message.encode(), signature.encode, sender_public)
-
-    return jsonify({
-        "message": message_real
-    }), 200
+    try:
+        message_real = enc.decrypt_message_with_aes_and_rsa(
+            receiver_private,
+            key,
+            nonce,
+            enc_message,
+            signature,
+            sender_public,
+        )
+        return jsonify({"message": message_real.decode()}), 200
+    except Exception:
+        return jsonify({"message": str(message.message)}), 400

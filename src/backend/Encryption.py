@@ -31,19 +31,15 @@ def rsa_sign(private_key: rsa.RSAPrivateKey, message: bytes) -> bytes:
     )
 
 
-def rsa_verify(public_key: rsa.RSAPublicKey, message: bytes, signature: bytes) -> bool:
-    try:
-        public_key.verify(
-            signature,
-            message,
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256(),
-        )
-        return True
-    except Exception:
-        return False
+def rsa_verify(public_key: rsa.RSAPublicKey, message: bytes, signature: bytes):
+    public_key.verify(
+        signature,
+        message,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256(),
+    )
 
 
 # ----
@@ -122,7 +118,6 @@ def rsa_encrypt(public_key: rsa.RSAPublicKey, plaintext):
             label=None,
         ),
     )
-
     return cipher_text
 
 
@@ -135,6 +130,7 @@ def rsa_encrypt(public_key: rsa.RSAPublicKey, plaintext):
 # Returns: The decrypted message (plaintext), as a raw byte string.
 #
 def rsa_decrypt(private_key: rsa.RSAPrivateKey, ciphertext):
+    print(private_key)
     plain_text = private_key.decrypt(
         ciphertext,
         padding.OAEP(
@@ -268,7 +264,5 @@ def decrypt_message_with_aes_and_rsa(
 ):
     full_signature = ciphertext + encrypted_session_key + nonce
     session_key: bytes = rsa_decrypt(private_key, encrypted_session_key)
-    if rsa_verify(sender_public_key, full_signature, signature):
-        return aes_decrypt(session_key, nonce, ciphertext)
-    else:
-        return None
+    rsa_verify(sender_public_key, full_signature, signature)
+    return aes_decrypt(session_key, nonce, ciphertext)
