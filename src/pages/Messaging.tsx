@@ -21,7 +21,7 @@ interface DBUser {
     email: string
 }
 
-interface userList{
+interface userList {
     id: number,
     email: string
 }
@@ -36,19 +36,36 @@ const Messaging = ({ user }: Props) => {
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
-    // const [listOfUsers, setListOfUsers] = useState<string[]>([])
+
     const [checkedItems, setCheckedItems] = useState<string[]>([]);
 
-    // Sample array of checkbox items
-    // const checkboxData = [
-    //     { id: 1, label: 'Option 1' },
-    //     { id: 2, label: 'Option 2' },
-    //     { id: 3, label: 'Option 3' },
-    //     { id: 4, label: 'Option 4' },
-    //     { id: 5, label: 'Option 5' },
-    //     { id: 6, label: 'Option 6' }
-    // ];
     const [checkboxData, setCheckboxData] = useState<userList[]>([])
+
+    //key generation
+    const [result, setResult] = useState(null);
+    const handleKeygen = async () => {
+        const email = user.email; // Replace with the actual email
+        const name = user.name;
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/flask/user/create/keygen/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 'email': email, 'name': name }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setResult(data);
+            } else {
+                console.error('Failed to fetch data');
+            }
+        } catch (error) {
+            console.error('Error during fetch:', error);
+        }
+    };//--------
 
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
@@ -85,7 +102,7 @@ const Messaging = ({ user }: Props) => {
                 counter++
             }
             // emails.push(data?.at(i)?.email)
-            let temp: userList = {id: i+1, email: data?.at(i)?.email}
+            let temp: userList = { id: i + 1, email: data?.at(i)?.email }
             emails.push(temp)
 
             // let newOption = [...checkboxData]
@@ -99,11 +116,15 @@ const Messaging = ({ user }: Props) => {
         console.log(emails)
         console.log("Hi")
         if (counter == len) {
-            const newUser = {
+            handleKeygen().then((result) => {
+                console.log(result)
+                const newUser = {
                 name: user?.name ?? "error",
                 email: user?.email ?? "error@gmail.com" + len
             }
-            addUserToDatabase(newUser)
+            //addUserToDatabase(newUser)
+            })
+            
         }
     }
     // if the user isn't found in the database, user is added to it

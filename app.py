@@ -4,10 +4,11 @@ import src.backend.Encryption as enc
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, DateTime, Text, BigInteger
 from datetime import datetime
-
+from flask_cors import CORS
 # psycopg2
 
 app = Flask(__name__)
+CORS(app)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 app.config["SECRET_KEY"] = "correcthorsebatterystaple"
 app.config[
@@ -22,7 +23,7 @@ class User(db.Model):
     __tablename__ = "users"
     id = Column(BigInteger, primary_key=True)
     created_at = Column(DateTime, nullable=False)
-    name = Column(Text, nullabe=False)
+    name = Column(Text, nullable=False)
     email = Column(Text, nullable=False, unique=True)
     private_key = Column(Text)
     public_key = Column(Text)
@@ -40,11 +41,14 @@ class Message(db.Model):
     created_at = Column(DateTime, nullable=False)
 
 
-@app.post("/api/user/create/keygen/")
+@app.post("/api/flask/user/create/keygen/")
 def newUser():
     key = enc.rsa_gen_keypair()
     info = request.json
     now = datetime.utcnow().isoformat()
+    user = User.query.filter_by(email=info['email']).all()
+    if user: 
+        return "", 200
     user = User(
         created_at=now,
         name=info["name"], # type: ignore
@@ -64,11 +68,11 @@ def newUser():
     return "", 200
 
 
-@app.post("/api/message/<str:sender>/<str:receiver>/encrypt/")
+@app.post("/api/flask/message/<string:sender>/<string:receiver>/encrypt/")
 def encrypt_message(sender, receiver):
     return "", 200
 
 
-@app.post("/api/message/<str:sender>/<str:receiver>/decrypt/")
+@app.post("/api/flask/message/<string:sender>/<string:receiver>/decrypt/")
 def decrypt_message(sender, receiver):
     return "", 200

@@ -50,7 +50,7 @@ def rsa_verify(public_key: rsa.RSAPublicKey, message: bytes, signature: bytes) -
     except Exception:
         return False
 
-
+#----
 def rsa_gen_keypair():
     return rsa.generate_private_key(
         key_size=RSA_KEY_BITS, public_exponent=RSA_PUBLIC_EXPONENT
