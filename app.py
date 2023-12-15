@@ -78,7 +78,7 @@ def encrypt_message():
     sender_private: rsa.RSAPrivateKey = enc.rsa_deserialize_private_key(sender.private_key)  # type: ignore
     receiver_public: rsa.RSAPublicKey = enc.rsa_deserialize_public_key(
         receiver.public_key
-    ) #type: ignore
+    )  # type: ignore
 
     key, nonce, encrypted_message, signature = enc.encrypt_message_with_aes_and_rsa(
         receiver_public, enc_message, sender_private
@@ -92,7 +92,7 @@ def encrypt_message():
         nonce=nonce,
         signature=signature,
         created_at=datetime.utcnow().isoformat(),
-    ) # type: ignore
+    )  # type: ignore
 
     db.session.add(message)
     db.session.commit()
@@ -108,7 +108,22 @@ def decrypt_message():
     ## get receiver
     receiver = User.query.filter_by(email=info["receiver"]).first_or_404()
 
-    message: str = info["message"]
-    enc_message: bytes = message.encode()
+    message_id: str = info["message"]
+    message: Message = Message.query.get(message_id) # type: ignore
 
-    return "", 200
+    enc_message = message.message
+    key = message.key
+    nonce = message.nonce
+    signature = message.signature
+
+
+    sender_public: rsa.RSAPublicKey = enc.rsa_deserialize_public_key(
+        sender.public_key
+    )  # type: ignore
+    receiver_private: rsa.RSAPrivateKey = enc.rsa_deserialize_private_key(receiver.private_key)  # type: ignore
+
+    message_real = enc.decrypt_message_with_aes_and_rsa(receiver_private, key.encode(), nonce.encode(), enc_message.encode(), signature.encode, sender_public)
+
+    return jsonify({
+        "message": message_real
+    }), 200
