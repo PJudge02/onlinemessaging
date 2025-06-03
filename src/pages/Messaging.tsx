@@ -55,21 +55,21 @@ const Messaging = ({ user }: Props) => {
             emails.push(data?.at(i)?.email)
         }
         setListOfUsers([...emails])
-        console.log(listOfUsers)
-        console.log(emails)
-        console.log("Hi")
+        // console.log(listOfUsers)
+        // console.log(emails)
+        // console.log("Hi")
         if (counter == len) {
             const newUser = {
                 name: user?.name ?? "error",
-                email: user?.email ?? "error@gmail.com" + len
+                email: user?.email ?? " @gmail.com" + len
             }
             addUserToDatabase(newUser)
         }
     }
     // if the user isn't found in the database, user is added to it
     const addUserToDatabase = async (newUser: DBUser) => {
-        console.log("Trying to add to database")
-        await supabase.from('users').insert(newUser)
+        console.log("Trying to add user to database")
+        const result = await supabase.from('users').insert(newUser)
     }
 
     const start = async () => {
@@ -84,7 +84,7 @@ const Messaging = ({ user }: Props) => {
                 const msg: string = data?.at(i)?.message ?? ERROR
                 const msgID: number = data?.at(i)?.id ?? -1
                 const time: string = data?.at(i)?.created_at.split('.')[0].substr(11)
-                const msgName: string = data?.at(i)?.name
+                const msgName: string = data?.at(i)?.name //not sure who's name
                 const clientSentThisMsg: boolean = data?.at(i)?.userid === USERNUMID
                 temp.push(<MessageBox
                     text={msg}
@@ -121,11 +121,14 @@ const Messaging = ({ user }: Props) => {
         start()
     }, [USERNUMID])
 
-    useEffect(() => {
+    //auto scrolling
+    useEffect(() =>{
         if (messageContainerRef.current) {
             messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
-        }
+        }   
+    },[listOfMessages])
 
+    useEffect(() => {
         const channel = supabase
             .channel('realtime messages')
             .on(
@@ -139,26 +142,27 @@ const Messaging = ({ user }: Props) => {
                     const clientSentThisMsg: boolean = payload.new.userid === USERNUMID
                     const time: string = payload.new.created_at?.split('.')[0].substr(11)
                     const msgName: string = payload.new.name
-                    setlistOfMessages([
-                        ...[<MessageBox
+                    setlistOfMessages((prevMessages) => [
+                        <MessageBox
                             text={payload.new.message}
                             messageKey={payload.new.id}
                             key={payload.new.id}
                             time={time}
                             clientSentMsg={clientSentThisMsg}
-                            name={msgName} />],
-                        ...listOfMessages])
+                            name={msgName}
+                        />,
+                        ...prevMessages
+                    ]);
                 }
             )
             .subscribe()
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [listOfMessages])
+    }, [USERNUMID])
 
-    const submit = async (msg: DBMsg) => {
-        console.log(listOfUsers)
-        await supabase
+    const submit = async (msg: DBMsg) => { //adding the message to the database
+        const result = await supabase
             .from('messagetracking')
             .insert(msg)
     }
@@ -207,12 +211,12 @@ const Messaging = ({ user }: Props) => {
                         onKeyDown={handleKeyDown}
                     />
                     <div className='bg-white w-1/4 border-solid border-2 border-gray-300 overflow-auto'
-                        style={{ height: '14vh'}}>
+                        style={{ height: '14vh' }}>
                         <label>
                             <input
                                 type="checkbox"
-                                // checked={isChecked}
-                                // onChange={handleCheckboxChange}
+                            // checked={isChecked}
+                            // onChange={handleCheckboxChange}
                             />
                             Checkbox Label
                         </label>
