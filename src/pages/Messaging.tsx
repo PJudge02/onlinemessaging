@@ -28,21 +28,13 @@ const Messaging = ({ user }: Props) => {
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
     const [listOfUsers, setListOfUsers] = useState<string[]>([])
-
-    //gets the information passed in
-    // const router = useRouter();
-    // const { userEmail, userName } = router.query;
+    const PAGE_SIZE = 20
 
     // checks to see if the user is found in the database
     const checkNewUser = async () => {
         let { data, error } = await supabase
             .from('users')
             .select('email')
-        // console.log("the following are the emails:")
-        // console.log(data)
-        // console.log("RIGHT HERE")
-        // console.log(user)
-        // console.log(data?.at(0)?.email)
         let userEmail = user?.email ?? ""
         let len = data?.length ?? 0
         let counter = 0
@@ -54,9 +46,6 @@ const Messaging = ({ user }: Props) => {
             emails.push(data?.at(i)?.email)
         }
         setListOfUsers([...emails])
-        // console.log(listOfUsers)
-        // console.log(emails)
-        // console.log("Hi")
         if (counter == len) {
             const newUser = {
                 name: user?.name ?? "error",

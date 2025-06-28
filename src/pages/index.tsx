@@ -4,14 +4,6 @@ import NavBar from '@/components/Navbar'
 import { useRouter } from 'next/router'
 
 export default function Home() {
-  // const checkNewUser = async () => {
-  //   let {data, error } = await supabase
-  //     .from('users')
-  //     .select('email')
-  //   console.log("the following are the emails:")
-  //   console.log(data)
-  // }
-  // checkNewUser()
 
   const { user, error, isLoading } = useUser()
   const router = useRouter()
@@ -20,10 +12,6 @@ export default function Home() {
   if (error) return <div>{error.message}</div>
 
   if (user) {
-    // console.log(user)
-    // console.log(user?.email)
-    // console.log(user?.name)
-    // console.log("^")
     router.push({
       pathname: './Messaging',
       query: { userEmail: user.email, userName: user.name }
