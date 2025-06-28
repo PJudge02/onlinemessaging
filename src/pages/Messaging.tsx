@@ -210,7 +210,7 @@ const Messaging = ({ user }: Props) => {
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
-                    <div className='bg-white w-1/4 border-solid border-2 border-gray-300 overflow-auto'
+                    {/* <div className='bg-white w-1/4 border-solid border-2 border-gray-300 overflow-auto'
                         style={{ height: '14vh' }}>
                         <label>
                             <input
@@ -220,7 +220,7 @@ const Messaging = ({ user }: Props) => {
                             />
                             Checkbox Label
                         </label>
-                    </div>
+                    </div> */}
                 </div>
 
             </div>
