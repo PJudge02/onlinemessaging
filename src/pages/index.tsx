@@ -1,5 +1,6 @@
 import { useUser } from '@auth0/nextjs-auth0/client'
 import Link from 'next/link'
+import NavBar from '@/components/Navbar'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -31,6 +32,7 @@ export default function Home() {
   } else {
     return (
       <>
+       <NavBar username={"New User"} />
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="max-w-md w-full bg-white shadow-lg rounded-2xl p-8 text-center">
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome to My Chatroom</h1>

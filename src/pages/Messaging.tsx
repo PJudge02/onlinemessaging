@@ -4,7 +4,6 @@ import NavBar from '@/components/Navbar'
 import { supabase } from '@/utils/supabase'
 import { useEffect, useState, useRef } from 'react'
 import MessageBox from '@/components/MessageBox'
-import { useRouter } from 'next/router';
 
 interface Props {
     user: UserProfile
@@ -210,17 +209,6 @@ const Messaging = ({ user }: Props) => {
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
-                    {/* <div className='bg-white w-1/4 border-solid border-2 border-gray-300 overflow-auto'
-                        style={{ height: '14vh' }}>
-                        <label>
-                            <input
-                                type="checkbox"
-                            // checked={isChecked}
-                            // onChange={handleCheckboxChange}
-                            />
-                            Checkbox Label
-                        </label>
-                    </div> */}
                 </div>
 
             </div>
