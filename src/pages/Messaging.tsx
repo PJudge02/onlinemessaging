@@ -28,7 +28,12 @@ const Messaging = ({ user }: Props) => {
     const [USERNUMID, setUSERNUMID] = useState('-1')
     const [name, setName] = useState('')
     const [listOfUsers, setListOfUsers] = useState<string[]>([])
-    const PAGE_SIZE = 20
+    const PAGE_SIZE: number = 10
+    const [lastMessageTimestamp, setLastMessageTimestamp] = useState("n/a")
+    const [isFetching, setIsFetching] = useState(false)
+    const isLoadingMoreRef = useRef(false);
+
+
 
     // checks to see if the user is found in the database
     const checkNewUser = async () => {
@@ -56,15 +61,50 @@ const Messaging = ({ user }: Props) => {
     }
     // if the user isn't found in the database, user is added to it
     const addUserToDatabase = async (newUser: DBUser) => {
-        console.log("Trying to add user to database")
         const result = await supabase.from('users').insert(newUser)
     }
 
-    const start = async () => {
-        checkNewUser()
-        let { data, error } = await supabase
-            .from('messagetracking')
-            .select()
+    //retrevies the PAGE_SIZE (10) most recent messages
+    const fetchLatestMessages = async (firstTime: boolean) => {
+        if (firstTime) {
+            const { data, error } = await supabase
+                .from('messagetracking')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(PAGE_SIZE)
+
+            if (!data || data.length === 0) return null;
+
+            return data?.reverse() // Reverse to show oldest-to-newest order
+        } else {
+            if (!lastMessageTimestamp) {
+                console.warn("Blocked fetch: No Messages Left To Load.");
+                return null;
+            }
+            setIsFetching(true)
+
+            const { data, error } = await supabase
+                .from('messagetracking')
+                .select('*')
+                .lt('created_at', lastMessageTimestamp) // fetch messages older than the earliest one
+                .order('created_at', { ascending: false })
+                .limit(PAGE_SIZE)
+
+            setIsFetching(false)
+
+            if (!data || data.length === 0) return null;
+
+            return data?.reverse()
+        }
+
+    }
+
+    const loadMessages = async (firstTime: boolean) => {
+        // checkNewUser()
+        let data = await fetchLatestMessages(firstTime)
+
+        setLastMessageTimestamp(data?.at(0)?.created_at)
+
         const length: number = data?.length ?? 0
         if (length > 0) {
             const temp = []
@@ -82,9 +122,41 @@ const Messaging = ({ user }: Props) => {
                     clientSentMsg={clientSentThisMsg}
                     name={msgName} />)
             }
-            setlistOfMessages([...temp])
+            setlistOfMessages([...listOfMessages, ...temp])
         }
     }
+
+    // Attach scroll listener once on mount
+    useEffect(() => {
+        const container = messageContainerRef.current;
+        if (!container) return
+
+        const previousScrollHeight = container?.scrollHeight ?? 0
+
+        const handleScroll = () => {
+            if (container.scrollTop === 0 && !isFetching) {
+                (async () => {
+                    isLoadingMoreRef.current = true
+                    await loadMessages(false)
+
+                    // Wait for DOM update (React state update)
+                    requestAnimationFrame(() => {
+                        const newScrollHeight = container.scrollHeight
+                        const scrollDifference = newScrollHeight - previousScrollHeight
+                        container.scrollTop = scrollDifference // restore scroll position
+                        isLoadingMoreRef.current = false
+                    });
+
+                })()
+
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll)
+        return () => {
+            container.removeEventListener('scroll', handleScroll)
+        };
+    }, [isFetching, listOfMessages, lastMessageTimestamp])
 
     // when the page first renders 
     useEffect(() => {
@@ -100,22 +172,25 @@ const Messaging = ({ user }: Props) => {
         } catch {
             setUSERNUMID('-1')
         }
-        console.log("HELLO THERE")
-        console.log(user)
     }, [])
 
     //Calls start once the USERNUMID is set
     useEffect(() => {
-        start()
+        checkNewUser()
+        loadMessages(true)
     }, [USERNUMID])
 
     //auto scrolling
-    useEffect(() =>{
-        if (messageContainerRef.current) {
-            messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
-        }   
-    },[listOfMessages])
+    useEffect(() => {
+        if (isLoadingMoreRef.current) return // don't auto-scroll during history loading
 
+        const container = messageContainerRef.current
+        if (container) {
+            container.scrollTop = container.scrollHeight // scroll to bottom
+        }
+    }, [listOfMessages])
+
+    //putting sent messages into the database
     useEffect(() => {
         const channel = supabase
             .channel('realtime messages')
