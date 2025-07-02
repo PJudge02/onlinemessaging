@@ -12,7 +12,7 @@ interface Props {
 const MessageBox = ({ text, messageKey, time, clientSentMsg, name }: Props) => {
     const [hovered, setHovered] = useState(false)
     
-    const formattedTime = format(new Date(time), "h:mm a")
+    const formattedTime = format(new Date(time), "MM/dd 'at' h:mm a")
     // If you want AM/PM instead of military, use: "MMM d, yyyy 'at' h:mm a"
 
     return (
