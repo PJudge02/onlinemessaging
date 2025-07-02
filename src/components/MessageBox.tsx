@@ -11,7 +11,7 @@ interface Props {
 
 const MessageBox = ({ text, messageKey, time, clientSentMsg, name }: Props) => {
     const [hovered, setHovered] = useState(false)
-    
+
     const formattedTime = format(new Date(time), "MM/dd 'at' h:mm a")
 
     return (

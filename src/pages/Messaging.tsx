@@ -203,7 +203,7 @@ const Messaging = ({ user }: Props) => {
                 },
                 (payload: any) => {
                     const clientSentThisMsg: boolean = payload.new.userid === USERNUMID
-                    const time: string = payload.new.created_at?.split('.')[0].substr(11)
+                    const time: string = payload.new.created_at?.split('.')[0]
                     const msgName: string = payload.new.name
                     setlistOfMessages((prevMessages) => [
                         <MessageBox
