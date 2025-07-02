@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { format } from 'date-fns'
 
 interface Props {
     text: string,
@@ -8,8 +9,11 @@ interface Props {
     name: string
 }
 
-const MessageBox = ({ text, messageKey, time, clientSentMsg, name}: Props) => {
+const MessageBox = ({ text, messageKey, time, clientSentMsg, name }: Props) => {
     const [hovered, setHovered] = useState(false)
+    
+    const formattedTime = format(new Date(time), "h:mm a")
+    // If you want AM/PM instead of military, use: "MMM d, yyyy 'at' h:mm a"
 
     return (
         <>
@@ -23,7 +27,7 @@ const MessageBox = ({ text, messageKey, time, clientSentMsg, name}: Props) => {
                             className={`bg-blue-500 p-2 flex items-center shadow-md justify-between rounded-md max-w-xs md:max-w-md mb-3 ${hovered ? '' : 'mr-5'}`}>
                             <div className="text-white whitespace-normal break-all">{text}</div>
                         </div>
-                        {hovered ? (<div className='mb-3 ml-1'>{time}</div>) : <></>}
+                        {hovered ? (<div className='mb-3 ml-1'>{formattedTime}</div>) : <></>}
                     </div>
 
                 </div>
@@ -39,7 +43,7 @@ const MessageBox = ({ text, messageKey, time, clientSentMsg, name}: Props) => {
                             className={`bg-gray-300 p-2 flex items-center shadow-md justify-between mr-auto rounded-md max-w-xs md:max-w-md mb-3 ml-5`}>
                             <div className={`text-black whitespace-normal break-all`}>{text}</div>
                         </div>
-                        {hovered ? (<div className='mb-3 ml-1'>{time}</div>) : <></>}
+                        {hovered ? (<div className='mb-3 ml-1'>{formattedTime}</div>) : <></>}
                     </div>
 
                 </div>

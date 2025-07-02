@@ -111,7 +111,7 @@ const Messaging = ({ user }: Props) => {
             for (let i = length - 1; i >= 0; i--) {
                 const msg: string = data?.at(i)?.message ?? ERROR
                 const msgID: number = data?.at(i)?.id ?? -1
-                const time: string = data?.at(i)?.created_at.split('.')[0].substr(11)
+                const time: string = data?.at(i)?.created_at.split('.')[0]//const time: string = data?.at(i)?.created_at.split('.')[0].substr(11)
                 const msgName: string = data?.at(i)?.name //not sure who's name
                 const clientSentThisMsg: boolean = data?.at(i)?.userid === USERNUMID
                 temp.push(<MessageBox
